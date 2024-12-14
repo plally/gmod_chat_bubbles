@@ -5,7 +5,7 @@ local enableConvar = CreateClientConVar( "chat_bubbles_enable", "1", true, false
 local maxTextSize = CreateClientConVar( "chat_bubbles_max_line_length", "80", true, false, "Max line length for chat bubbles", 1, 150 )
 
 local msgTable = {}
-local ChatBubbles = {}
+ChatBubbles = {}
 
 local entityMeta = FindMetaTable( "Entity" )
 local plyMeta = FindMetaTable( "Player" )
