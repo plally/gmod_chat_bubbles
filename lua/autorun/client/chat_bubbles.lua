@@ -5,6 +5,7 @@ local enableConvar = CreateClientConVar( "chat_bubbles_enable", "1", true, false
 local maxTextSize = CreateClientConVar( "chat_bubbles_max_line_length", "80", true, false, "Max line length for chat bubbles", 1, 150 )
 
 local msgTable = {}
+local ChatBubbles = {}
 
 local entityMeta = FindMetaTable( "Entity" )
 local plyMeta = FindMetaTable( "Player" )
@@ -105,7 +106,9 @@ local function shouldDrawPlayermessage( ply )
     return true
 end
 
-local function onPlayerChat( ply, text, isTeam, isDead )
+function ChatBubbles.OnPlayerChat( ply, text, isTeam, isDead )
+    if not ChatBubbles.enabled then return end
+
     if isTeam then return end
     if isDead then return end
 
@@ -127,7 +130,6 @@ local function onPlayerChat( ply, text, isTeam, isDead )
     } )
 end
 
-local enabled = enableConvar:GetBool()
 local function cleanupMsgList()
     local actualExpire = expiresConvar:GetFloat() + fadeTimeConvar:GetFloat()
     local maxMessages = maxMessagesConvar:GetInt()
@@ -162,22 +164,26 @@ local function drawPlyChatMessages( ply )
     drawMessages( ply, messages )
 end
 
+local enabled = enableConvar:GetBool()
 if enabled then
-    hook.Add( "OnPlayerChat", "ChatBubbles_NewMessage", onPlayerChat )
+    hook.Add( "OnPlayerChat", "ChatBubbles_NewMessage", ChatBubbles.OnPlayerChat )
     timer.Create( "ChatBubblesCleanup", 1, 0, cleanupMsgList )
     hook.Add( "PostPlayerDraw", "ChatBubbles_Draw", drawPlyChatMessages )
+    ChatBubbles.enabled = true
 end
 
 cvars.AddChangeCallback( "chat_bubbles_enable", function( convar, _, newValue )
     if convar ~= "chat_bubbles_enable" then return end
 
     if newValue == "1" then
-        hook.Add( "OnPlayerChat", "ChatBubbles_NewMessage", onPlayerChat )
+        hook.Add( "OnPlayerChat", "ChatBubbles_NewMessage", ChatBubbles.OnPlayerChat )
         timer.Create( "ChatBubblesCleanup", 1, 0, cleanupMsgList )
         hook.Add( "PostPlayerDraw", "ChatBubbles_Draw", drawPlyChatMessages )
+        ChatBubbles.enabled = true
     else
         hook.Remove( "OnPlayerChat", "ChatBubbles_NewMessage" )
         timer.Remove( "ChatBubblesCleanup" )
         hook.Remove( "PostPlayerDraw", "ChatBubbles_Draw" )
+        ChatBubbles.enabled = false
     end
 end )
