@@ -1,9 +1,9 @@
 if engine.ActiveGamemode() ~= "terrortown" then return end
 
-local GetTranslation = LANG.GetTranslation
-local GetPTranslation = LANG.GetParamTranslation
-
 hook.Add( "InitPostEntity", "ChatBubblesTTTRadio", function()
+    local GetTranslation = LANG.GetTranslation
+    local GetPTranslation = LANG.GetParamTranslation
+
     if GAMEMODE.PlayerSentRadioCommand == nil then return end
 
     _ChatBubblesOldPlayerSentRadioCommand = _ChatBubblesOldPlayerSentRadioCommand or GAMEMODE.PlayerSentRadioCommand
