@@ -33,7 +33,8 @@ local function drawMessages( ply, messages )
     local bonePos = boneMatrix:GetTranslation()
 
     local pos = bonePos + Vector( 0, 0, 80 )
-    local ang = EyeAngles()
+    local eyePos = LocalPlayer():EyePos()
+    local ang = (pos - eyePos):GetNormalized():Angle()
     ang.y = ang.y - 90
     ang.r = 90
     ang.p = 0
@@ -69,6 +70,9 @@ local function drawMessages( ply, messages )
         if alpha > 0 then
             surface.SetFont( font )
             local width, height = surface.GetTextSize( v )
+            if width < 50 then
+                width = 50
+            end
 
             draw.RoundedBox( 10, -width / 2 - 10, yOffset - yPos - 10, width + 20, height + 20, white )
             draw.DrawText( v, font, 0, yOffset - yPos, black, TEXT_ALIGN_CENTER )
