@@ -3,6 +3,7 @@ local fadeTimeConvar = CreateClientConVar( "chat_bubbles_fade_seconds", "2", tru
 local maxMessagesConvar = CreateClientConVar( "chat_bubbles_max_messages", "2", true, false, "How many messages to display above a player's head" )
 local enableConvar = CreateClientConVar( "chat_bubbles_enable", "1", true, false, "Enable or disable the overhead chat bubbles" )
 local maxTextSize = CreateClientConVar( "chat_bubbles_max_line_length", "80", true, false, "Max line length for chat bubbles", 1, 150 )
+local maxDistanceConvar = CreateClientConVar( "chat_bubbles_max_distance", "500", true, false, "Max distance for chat bubbles" )
 
 local msgTable = {}
 ChatBubbles = {}
@@ -23,6 +24,8 @@ local OBS_MODE_NONE = OBS_MODE_NONE
 local function drawMessages( ply, messages )
     local expiration = expiresConvar:GetFloat()
     local fadeTime = fadeTimeConvar:GetFloat()
+    local maxDistance = maxDistanceConvar:GetInt()
+
     local font = "ChatBubblesFont"
 
     local boneIndex = entLookupBone( ply, "ValveBiped.Bip01_Head1" )
@@ -34,7 +37,9 @@ local function drawMessages( ply, messages )
 
     local pos = bonePos + Vector( 0, 0, 80 )
     local eyePos = LocalPlayer():EyePos()
-    local ang = (pos - eyePos):GetNormalized():Angle()
+    local v = pos - eyePos
+    local ang = v:GetNormalized():Angle()
+    local distance = v:Length()
     ang.y = ang.y - 90
     ang.r = 90
     ang.p = 0
@@ -43,6 +48,9 @@ local function drawMessages( ply, messages )
     local yPos = 0
     local yOffset = 640
     local alpha = 255
+    if distance > maxDistance then
+        alpha = 255 - (distance - maxDistance) / 100 * 255
+    end
 
     for i, message in ipairs( messages ) do
         local v = message.msg
