@@ -63,7 +63,7 @@ local function drawMessages( ply, messages )
         end
 
         local white
-        -- use a grey if bloom is enabled
+        -- use a grey if bloom is enabled so text is still readable
         if render.GetHDREnabled() and disableBloomConvar:GetInt() == 0 then
             white = Color( 140, 140, 140, alpha )
         else
