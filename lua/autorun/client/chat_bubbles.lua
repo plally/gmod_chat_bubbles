@@ -105,6 +105,9 @@ local function shouldDrawPlayermessage( ply )
     if not plyIsAlive( ply ) then
         return false
     end
+    if ply:IsDormant() then
+        return false
+    end
     ---@diagnostic disable-next-line: undefined-field
     if plyIsTerror and not plyIsTerror( ply ) then
         return false
@@ -176,11 +179,24 @@ local function drawPlyChatMessages( ply )
     drawMessages( ply, messages )
 end
 
+local function drawAllPlayerChatMessages()
+    for _, ply in ipairs( player.GetAll() ) do
+        drawPlyChatMessages( ply )
+    end
+end
+
+hook.Add( "PostDrawOpaqueRenderables", "ChatBubbles_Draw", function()
+    for _, ply in ipairs( player.GetAll() ) do
+        drawPlyChatMessages( ply )
+    end
+end )
+hook.Remove( "PostPlayerDraw", "ChatBubbles_Draw" )
+
 local enabled = enableConvar:GetBool()
 if enabled then
     hook.Add( "OnPlayerChat", "ChatBubbles_NewMessage", ChatBubbles.OnPlayerChat )
     timer.Create( "ChatBubblesCleanup", 1, 0, cleanupMsgList )
-    hook.Add( "PostPlayerDraw", "ChatBubbles_Draw", drawPlyChatMessages )
+    hook.Add( "PostDrawTranslucentRenderables", "ChatBubbles_Draw", drawAllPlayerChatMessages )
     ChatBubbles.enabled = true
 end
 
@@ -190,12 +206,12 @@ cvars.AddChangeCallback( "chat_bubbles_enable", function( convar, _, newValue )
     if newValue == "1" then
         hook.Add( "OnPlayerChat", "ChatBubbles_NewMessage", ChatBubbles.OnPlayerChat )
         timer.Create( "ChatBubblesCleanup", 1, 0, cleanupMsgList )
-        hook.Add( "PostPlayerDraw", "ChatBubbles_Draw", drawPlyChatMessages )
+        hook.Add( "PostDrawTranslucentRenderables", "ChatBubbles_Draw", drawAllPlayerChatMessages )
         ChatBubbles.enabled = true
     else
         hook.Remove( "OnPlayerChat", "ChatBubbles_NewMessage" )
         timer.Remove( "ChatBubblesCleanup" )
-        hook.Remove( "PostPlayerDraw", "ChatBubbles_Draw" )
+        hook.Remove( "PostDrawTranslucentRenderables", "ChatBubbles_Draw" )
         ChatBubbles.enabled = false
     end
 end )
