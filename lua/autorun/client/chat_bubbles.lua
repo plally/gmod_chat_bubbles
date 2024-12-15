@@ -5,6 +5,8 @@ local enableConvar = CreateClientConVar( "chat_bubbles_enable", "1", true, false
 local maxTextSize = CreateClientConVar( "chat_bubbles_max_line_length", "80", true, false, "Max line length for chat bubbles", 1, 150 )
 local maxDistanceConvar = CreateClientConVar( "chat_bubbles_max_distance", "500", true, false, "Max distance for chat bubbles" )
 
+local disableBloomConvar = GetConVar( "mat_disable_bloom" )
+
 local msgTable = {}
 ChatBubbles = {}
 
@@ -60,7 +62,14 @@ local function drawMessages( ply, messages )
             alpha = 255 - ((timeSince - expiration) / fadeTime) * 255
         end
 
-        local white = Color( 255, 255, 255, alpha )
+        local white
+        -- use a grey if bloom is enabled
+        if render.GetHDREnabled() and disableBloomConvar:GetInt() == 0 then
+            white = Color( 140, 140, 140, alpha )
+        else
+            white = Color( 255, 255, 255, alpha )
+        end
+
         local black = Color( 0, 0, 0, alpha )
 
         if i == 1 and alpha > 0 then
@@ -94,7 +103,7 @@ end
 
 surface.CreateFont( "ChatBubblesFont", {
     font = "Arial",
-    size = 30,
+    size = 45,
     blursize = 0,
     weight = 900,
     antialias = true,
