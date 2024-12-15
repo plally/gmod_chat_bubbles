@@ -185,13 +185,6 @@ local function drawAllPlayerChatMessages()
     end
 end
 
-hook.Add( "PostDrawOpaqueRenderables", "ChatBubbles_Draw", function()
-    for _, ply in ipairs( player.GetAll() ) do
-        drawPlyChatMessages( ply )
-    end
-end )
-hook.Remove( "PostPlayerDraw", "ChatBubbles_Draw" )
-
 local enabled = enableConvar:GetBool()
 if enabled then
     hook.Add( "OnPlayerChat", "ChatBubbles_NewMessage", ChatBubbles.OnPlayerChat )
