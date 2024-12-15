@@ -72,25 +72,24 @@ local function drawMessages( ply, messages )
 
         local black = Color( 0, 0, 0, alpha )
 
+        surface.SetFont( font )
+        local width, height = surface.GetTextSize( v )
+        if width < 50 then
+            width = 50
+        end
+
         if i == 1 and alpha > 0 then
             surface.SetDrawColor( white )
             local triangle = {
-                { x = 0,   y = yOffset - yPos + 60 },
-                { x = -15, y = yOffset - yPos + 40 },
-                { x = 15,  y = yOffset - yPos + 40 },
+                { x = 0,   y = yOffset - yPos + 30 + height },
+                { x = -15, y = yOffset - yPos + 10 + height },
+                { x = 15,  y = yOffset - yPos + 10 + height },
             }
             draw.NoTexture()
             surface.DrawPoly( triangle )
         end
 
-
         if alpha > 0 then
-            surface.SetFont( font )
-            local width, height = surface.GetTextSize( v )
-            if width < 50 then
-                width = 50
-            end
-
             draw.RoundedBox( 10, -width / 2 - 10, yOffset - yPos - 10, width + 20, height + 20, white )
             draw.DrawText( v, font, 0, yOffset - yPos, black, TEXT_ALIGN_CENTER )
 
