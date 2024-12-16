@@ -296,3 +296,4 @@ cvars.AddChangeCallback( "chat_bubbles_enable", function( convar, _, newValue )
         ChatBubbles.enabled = false
     end
 end )
+ChatBubbles.plyIsTerror = plyIsTerror
