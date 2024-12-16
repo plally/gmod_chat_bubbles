@@ -1,14 +1,49 @@
-local expiresConvar = CreateClientConVar( "chat_bubbles_expiration_seconds", "5", true, false, "How long the chat message will be displayed above the player's head" )
-local fadeTimeConvar = CreateClientConVar( "chat_bubbles_fade_seconds", "2", true, false, "How long it takes for the chat message to fade out, after they expire" )
-local maxMessagesConvar = CreateClientConVar( "chat_bubbles_max_messages", "2", true, false, "How many messages to display above a player's head" )
-local enableConvar = CreateClientConVar( "chat_bubbles_enable", "1", true, false, "Enable or disable the overhead chat bubbles" )
-local maxTextSize = CreateClientConVar( "chat_bubbles_max_line_length", "80", true, false, "Max line length for chat bubbles", 1, 150 )
-local maxDistanceConvar = CreateClientConVar( "chat_bubbles_max_distance", "500", true, false, "Max distance for chat bubbles" )
+---@class ConfigVariable
+---@field name string
+---@field description string
+---@field defaultValue string
+---@field shouldSave boolean|nil
+
+---@type ConfigVariable[]
+local convars = {
+    { name = "chat_bubbles_enable",                description = "Enable or disable the overhead chat bubbles",                           defaultValue = "1" },
+
+    { name = "chat_bubbles_expiration_seconds",    description = "How long the chat message will be displayed above the player's head",   defaultValue = "5" },
+    { name = "chat_bubbles_fade_seconds",          description = "How long it takes for the chat message to fade out, after they expire", defaultValue = "2" },
+    { name = "chat_bubbles_max_messages",          description = "How many messages to display above a player's head",                    defaultValue = "5" },
+
+    { name = "chat_bubbles_max_line_length",       description = "Max line length for chat bubbles",                                      defaultValue = "70" },
+    { name = "chat_bubbles_long_message_behavior", description = "How should long messages be handled, split/truncate",                   defaultValue = "split" },
+
+    { name = "chat_bubbles_max_distance",          description = "Max distance before chat bubbles fade",                                 defaultValue = "500" },
+}
+
+for _, convar in ipairs( convars ) do
+    convar.shouldSave = true
+end
+
+--- allow servers to modify convar defaults before registering
+hook.Run( "ChatBubbles_PreRegisterConvars", convars )
+
+for _, convar in ipairs( convars ) do
+    CreateConVar( convar.name, convar.defaultValue, { FCVAR_ARCHIVE, FCVAR_REPLICATED }, convar.description )
+end
+
+local expiresConvar = GetConVar( "chat_bubbles_expiration_seconds" )
+local fadeTimeConvar = GetConVar( "chat_bubbles_fade_seconds" )
+local maxMessagesConvar = GetConVar( "chat_bubbles_max_messages" )
+local enableConvar = GetConVar( "chat_bubbles_enable" )
+local maxTextSize = GetConVar( "chat_bubbles_max_line_length" )
+local maxDistanceConvar = GetConVar( "chat_bubbles_max_distance" )
+local longMessageBehaviorConvar = GetConVar( "chat_bubbles_long_message_behavior" )
 
 local disableBloomConvar = GetConVar( "mat_disable_bloom" )
 
 local msgTable = {}
-ChatBubbles = {}
+ChatBubbles = {
+    enabled = false,
+    convars = convars,
+}
 
 local entityMeta = FindMetaTable( "Entity" )
 local plyMeta = FindMetaTable( "Player" )
@@ -93,7 +128,11 @@ local function drawMessages( ply, messages )
             draw.RoundedBox( 10, -width / 2 - 10, yOffset - yPos - 10, width + 20, height + 20, white )
             draw.DrawText( v, font, 0, yOffset - yPos, black, TEXT_ALIGN_CENTER )
 
+
             yPos = yPos + height + 25
+            if message.hasGap == false then
+                yPos = yPos - 13
+            end
         end
     end
 
@@ -142,6 +181,26 @@ function ChatBubbles.OnPlayerChat( ply, text, isTeam, isDead )
 
     local maxLen = maxTextSize:GetInt()
 
+    local hasGap = true
+    if #text > maxLen and behavior == "split" then
+        local behavior = longMessageBehaviorConvar:GetString()
+        -- insert the first part of the message
+        local maxMessages = maxMessagesConvar:GetInt() - 1
+        for _ = 1, maxMessages do
+            if #text <= maxLen then break end
+
+            local split = string.sub( text, 1, maxLen )
+            table.insert( plyMsgTable, 1, {
+                msg = split,
+                ply = ply,
+                time = CurTime(),
+                hasGap = hasGap
+            } )
+            hasGap = false
+            text = string.sub( text, maxLen + 1 )
+        end
+    end
+
     if #text > maxLen then
         text = string.sub( text, 1, maxLen ) .. "..."
     end
@@ -150,6 +209,7 @@ function ChatBubbles.OnPlayerChat( ply, text, isTeam, isDead )
         msg = text,
         ply = ply,
         time = CurTime(),
+        hasGap = hasGap
     } )
 end
 
