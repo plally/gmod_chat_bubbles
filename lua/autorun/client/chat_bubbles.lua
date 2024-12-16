@@ -18,6 +18,7 @@ local convars = {
     { name = "chat_bubbles_max_distance",          description = "Max distance before chat bubbles fade",                                 defaultValue = "500" },
 }
 
+
 for _, convar in ipairs( convars ) do
     convar.shouldSave = true
 end
