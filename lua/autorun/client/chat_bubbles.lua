@@ -182,14 +182,22 @@ function ChatBubbles.OnPlayerChat( ply, text, isTeam, isDead )
     local maxLen = maxTextSize:GetInt()
 
     local hasGap = true
+    local behavior = longMessageBehaviorConvar:GetString()
     if #text > maxLen and behavior == "split" then
-        local behavior = longMessageBehaviorConvar:GetString()
         -- insert the first part of the message
         local maxMessages = maxMessagesConvar:GetInt() - 1
         for _ = 1, maxMessages do
             if #text <= maxLen then break end
+            local splitAt = maxLen
+            local nextSpace = string.find( text, " ", maxLen )
+            local prevSpace = string.find( text, " ", maxLen - 10 )
+            if nextSpace and nextSpace - maxLen < 10 then
+                splitAt = nextSpace
+            elseif prevSpace and prevSpace < maxLen then
+                splitAt = prevSpace
+            end
 
-            local split = string.sub( text, 1, maxLen )
+            local split = string.sub( text, 1, splitAt )
             table.insert( plyMsgTable, 1, {
                 msg = split,
                 ply = ply,
@@ -197,7 +205,7 @@ function ChatBubbles.OnPlayerChat( ply, text, isTeam, isDead )
                 hasGap = hasGap
             } )
             hasGap = false
-            text = string.sub( text, maxLen + 1 )
+            text = string.sub( text, splitAt + 1 )
         end
     end
 
