@@ -57,6 +57,10 @@ local plyIsTerror = plyMeta.IsTerror
 local plyGetObserverMode = plyMeta.GetObserverMode
 local OBS_MODE_NONE = OBS_MODE_NONE
 
+hook.Add( "InitPostEntity", "ChatBubbles_UpdateLocals", function()
+    plyIsTerror = plyMeta.IsTerror
+end )
+
 ---@param ply Player
 ---@param messages table
 local function drawMessages( ply, messages )
@@ -295,9 +299,4 @@ cvars.AddChangeCallback( "chat_bubbles_enable", function( convar, _, newValue )
         hook.Remove( "PostDrawTranslucentRenderables", "ChatBubbles_Draw" )
         ChatBubbles.enabled = false
     end
-end )
-ChatBubbles.plyIsTerror = plyIsTerror
-hook.Add( "InitPostEntity", "UpdateLocals", function()
-    plyIsTerror = plyMeta.IsTerror
-    ChatBubbles.plyIsTerror = plyIsTerror
 end )
