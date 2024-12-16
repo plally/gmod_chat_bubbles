@@ -297,3 +297,7 @@ cvars.AddChangeCallback( "chat_bubbles_enable", function( convar, _, newValue )
     end
 end )
 ChatBubbles.plyIsTerror = plyIsTerror
+hook.Add( "InitPostEntity", "UpdateLocals", function()
+    plyIsTerror = plyMeta.IsTerror
+    ChatBubbles.plyIsTerror = plyIsTerror
+end )
