@@ -157,8 +157,13 @@ local function shouldDrawPlayermessage( ply )
         return false
     end
     ---@diagnostic disable-next-line: undefined-field
-    if plyIsTerror and not plyIsTerror( ply ) then
-        return false
+    if plyIsTerror then
+        if not plyIsTerror( ply ) then
+            return false
+        end
+        if ply:GetNWBool( "disguised", false ) then
+            return false
+        end
     end
     if ply == LocalPlayer() then
         return false
