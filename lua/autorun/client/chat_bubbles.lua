@@ -83,7 +83,7 @@ local function drawMessages( ply, messages )
 
     cam.Start3D2D( pos, ang, 0.1 )
     local yPos = 0
-    local yOffset = 640
+    local yOffset = 625
     local alpha = 255
     if distance > maxDistance then
         alpha = 255 - (distance - maxDistance) / 100 * 255
@@ -131,7 +131,7 @@ local function drawMessages( ply, messages )
 
             yPos = yPos + height + 25
             if message.hasGap == false then
-                yPos = yPos - 13
+                yPos = yPos - 7
             end
         end
     end
@@ -184,18 +184,23 @@ function ChatBubbles.OnPlayerChat( ply, text, isTeam, isDead )
     local hasGap = true
     local behavior = longMessageBehaviorConvar:GetString()
     if #text > maxLen and behavior == "split" then
+        local behavior = longMessageBehaviorConvar:GetString()
+
         -- insert the first part of the message
         local maxMessages = maxMessagesConvar:GetInt() - 1
         for _ = 1, maxMessages do
             if #text <= maxLen then break end
             local splitAt = maxLen
             local nextSpace = string.find( text, " ", maxLen )
-            local prevSpace = string.find( text, " ", maxLen - 10 )
             if nextSpace and nextSpace - maxLen < 10 then
                 splitAt = nextSpace
-            elseif prevSpace and prevSpace < maxLen then
-                splitAt = prevSpace
+            else
+                local prevSpace = string.find( text, " ", maxLen - 10 )
+                if prevSpace and prevSpace < maxLen then
+                    splitAt = prevSpace
+                end
             end
+
 
             local split = string.sub( text, 1, splitAt )
             table.insert( plyMsgTable, 1, {
@@ -212,13 +217,14 @@ function ChatBubbles.OnPlayerChat( ply, text, isTeam, isDead )
     if #text > maxLen then
         text = string.sub( text, 1, maxLen ) .. "..."
     end
-
-    table.insert( plyMsgTable, 1, {
-        msg = text,
-        ply = ply,
-        time = CurTime(),
-        hasGap = hasGap
-    } )
+    if #text > 0 then
+        table.insert( plyMsgTable, 1, {
+            msg = text,
+            ply = ply,
+            time = CurTime(),
+            hasGap = hasGap
+        } )
+    end
 end
 
 local function cleanupMsgList()
