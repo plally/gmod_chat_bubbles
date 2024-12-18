@@ -27,8 +27,9 @@ end
 hook.Run( "ChatBubbles_PreRegisterConvars", convars )
 
 for _, convar in ipairs( convars ) do
-    CreateConVar( convar.name, convar.defaultValue, { FCVAR_ARCHIVE, FCVAR_REPLICATED }, convar.description )
+    CreateClientConVar( convar.name, convar.defaultValue, convar.shouldSave, false, convar.description )
 end
+local shouldUseVisCheck = CreateConVar( "chat_bubbles_strict_vis", "0", { FCVAR_ARCHIVE, FCVAR_REPLICATED }, "If set to 1, a visibility check will be attempted before drawing chat bubbles." )
 
 local expiresConvar = GetConVar( "chat_bubbles_expiration_seconds" )
 local fadeTimeConvar = GetConVar( "chat_bubbles_fade_seconds" )
@@ -79,8 +80,6 @@ local function drawMessages( ply, messages )
     if not boneMatrix then return end
     local bonePos = boneMatrix:GetTranslation()
 
-    local visHandle = visHandles[ply] or util.GetPixelVisibleHandle()
-    visHandles[ply] = visHandle
 
     local pos = bonePos + Vector( 0, 0, 80 )
     local eyePos = LocalPlayer():EyePos()
@@ -91,10 +90,15 @@ local function drawMessages( ply, messages )
     ang.r = 90
     ang.p = 0
 
-    local visPos = bonePos + Vector( 0, 0, 10 )
-    local vis = util.PixelVisible( visPos, 1, visHandle )
+    if shouldUseVisCheck:GetBool() then
+        local visHandle = visHandles[ply] or util.GetPixelVisibleHandle()
+        visHandles[ply] = visHandle
 
-    if vis == 0 then return end
+        local visPos = bonePos + Vector( 0, 0, 10 )
+        local vis = util.PixelVisible( visPos, 1, visHandle )
+
+        if vis == 0 then return end
+    end
 
     cam.Start3D2D( pos, ang, 0.1 )
     local yPos = 0
