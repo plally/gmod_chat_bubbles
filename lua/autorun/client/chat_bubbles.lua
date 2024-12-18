@@ -61,6 +61,8 @@ hook.Add( "InitPostEntity", "ChatBubbles_UpdateLocals", function()
     plyIsTerror = plyMeta.IsTerror
 end )
 
+local visHandles = {}
+
 ---@param ply Player
 ---@param messages table
 local function drawMessages( ply, messages )
@@ -77,14 +79,22 @@ local function drawMessages( ply, messages )
     if not boneMatrix then return end
     local bonePos = boneMatrix:GetTranslation()
 
+    local visHandle = visHandles[ply] or util.GetPixelVisibleHandle()
+    visHandles[ply] = visHandle
+
     local pos = bonePos + Vector( 0, 0, 80 )
     local eyePos = LocalPlayer():EyePos()
-    local v = pos - eyePos
-    local ang = v:GetNormalized():Angle()
+    local v = (pos - eyePos):GetNormalized()
+    local ang = v:Angle()
     local distance = v:Length()
     ang.y = ang.y - 90
     ang.r = 90
     ang.p = 0
+
+    local visPos = bonePos + Vector( 0, 0, 10 )
+    local vis = util.PixelVisible( visPos, 1, visHandle )
+
+    if vis == 0 then return end
 
     cam.Start3D2D( pos, ang, 0.1 )
     local yPos = 0
@@ -144,6 +154,7 @@ local function drawMessages( ply, messages )
     cam.End3D2D()
 end
 
+
 surface.CreateFont( "ChatBubblesFont", {
     font = "Arial",
     size = 45,
@@ -175,6 +186,7 @@ local function shouldDrawPlayermessage( ply )
     if plyGetObserverMode( ply ) ~= OBS_MODE_NONE then
         return false
     end
+
     return true
 end
 
@@ -300,3 +312,4 @@ cvars.AddChangeCallback( "chat_bubbles_enable", function( convar, _, newValue )
         ChatBubbles.enabled = false
     end
 end )
+
