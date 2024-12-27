@@ -54,6 +54,7 @@ local entLookupBone = entityMeta.LookupBone
 local entGetBoneMatrix = entityMeta.GetBoneMatrix
 
 local plyIsAlive = plyMeta.Alive
+local plyGetObserverTarget = plyMeta.GetObserverTarget
 local plyIsTerror = plyMeta.IsTerror
 local plyGetObserverMode = plyMeta.GetObserverMode
 local OBS_MODE_NONE = OBS_MODE_NONE
@@ -167,6 +168,7 @@ surface.CreateFont( "ChatBubblesFont", {
     antialias = true,
 } )
 
+
 ---@param ply Player
 local function shouldDrawPlayermessage( ply )
     if not plyIsAlive( ply ) then
@@ -183,6 +185,10 @@ local function shouldDrawPlayermessage( ply )
         if ply:GetNWBool( "disguised", false ) then
             return false
         end
+    end
+
+    if plyGetObserverMode( LocalPlayer() ) == OBS_MODE_IN_EYE and plyGetObserverTarget( LocalPlayer() ) == ply then
+        return false
     end
     if ply == LocalPlayer() then
         return false
@@ -316,4 +322,3 @@ cvars.AddChangeCallback( "chat_bubbles_enable", function( convar, _, newValue )
         ChatBubbles.enabled = false
     end
 end )
-
