@@ -171,6 +171,9 @@ surface.CreateFont( "ChatBubblesFont", {
 
 ---@param ply Player
 local function shouldDrawPlayermessage( ply )
+    if not IsValid( ply ) then
+        return false
+    end
     if not plyIsAlive( ply ) then
         return false
     end
