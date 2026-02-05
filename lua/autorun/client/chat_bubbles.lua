@@ -83,7 +83,7 @@ local function drawMessages( ply, messages )
 
 
     local pos = bonePos + Vector( 0, 0, 80 )
-    local eyePos = LocalPlayer():EyePos()
+    local eyePos = EyePos()
     local v = (pos - eyePos):GetNormalized()
     local ang = v:Angle()
     local distance = v:Length()
